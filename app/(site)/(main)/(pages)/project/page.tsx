@@ -35,7 +35,7 @@ export default function Project() {
     settings: {
       foreground: "#d4d4d4",
       gutterBackground: "#163042",
-      fontFamily: "Cascadia Code",
+      fontFamily: "Cascadia-Code",
       background: "#193549",
       lineHighlight: "#8a91991a",
       selection: "#21549a",
