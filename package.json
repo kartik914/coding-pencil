@@ -9,18 +9,33 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@codemirror/lang-css": "^6.2.1",
+    "@codemirror/lang-html": "^6.4.8",
+    "@codemirror/lang-javascript": "^6.2.2",
+    "@radix-ui/react-slot": "^1.1.0",
+    "@uiw/codemirror-extensions-color": "^4.21.25",
+    "@uiw/codemirror-theme-dracula": "^4.21.25",
+    "@uiw/react-codemirror": "^4.21.25",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "codemirror": "^6.0.1",
+    "lucide-react": "^0.418.0",
+    "next": "14.2.5",
     "react": "^18",
     "react-dom": "^18",
-    "next": "14.2.5"
+    "react-icons": "^5.2.1",
+    "react-resizable-panels": "^2.0.22",
+    "tailwind-merge": "^2.4.0",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.5",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.5"
+    "typescript": "^5"
   }
 }
