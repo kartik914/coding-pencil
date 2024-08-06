@@ -12,23 +12,77 @@ import { css as CSS } from "@codemirror/lang-css";
 import { javascript } from "@codemirror/lang-javascript";
 import { useEffect, useState } from "react";
 import { createTheme } from "@uiw/codemirror-themes";
-import { FaCss3Alt, FaHtml5 } from "react-icons/fa";
+import { FaCss3Alt, FaHtml5, FaPen, FaSave } from "react-icons/fa";
 import { RiJavascriptFill } from "react-icons/ri";
 import { CiCircleChevDown } from "react-icons/ci";
 import { tags as t } from "@lezer/highlight";
+import { useSelector } from "react-redux";
+import { User } from "firebase/auth";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDocs,
+  query as firebaseQuery,
+  updateDoc,
+  where,
+  orderBy,
+  onSnapshot,
+} from "firebase/firestore";
+import { db } from "@/app/firebase/firebase.config";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Project() {
-  const [html, setHtml] = useState("");
-  const [css, setCSS] = useState(`* {
+  const user: User = useSelector((state: any) => state.user.user);
+  const [project, setProject] = useState<Project>({
+    id: "",
+    title: "Untitled",
+    owner: {
+      displayName: user?.displayName || "",
+      email: user?.email || "",
+    },
+    html: "",
+    css: `* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
-  `);
-  const [js, setJS] = useState("");
+`,
+    js: "",
+    private: false,
+  });
   const [outputCode, setOutputCode] = useState("");
   const [sameOwner, setSameOwner] = useState(true);
   const [showOutput, setShowOutput] = useState(true);
+  const router = useRouter();
+
+  const projectId = useSearchParams().get("id");
+
+  useEffect(() => {
+    const projectQuery = firebaseQuery(
+      collection(db, "Projects"),
+      where("id", "==", projectId),
+      orderBy("id", "desc")
+    );
+
+    const unsubscribe = onSnapshot(projectQuery, (querySnaps) => {
+      const _project = querySnaps.docs.map((doc) => doc.data())[0];
+      setProject({
+        id: _project.id,
+        title: _project.title,
+        owner: _project.owner,
+        html: _project.html,
+        css: _project.css,
+        js: _project.js,
+        private: _project.private,
+      });
+      setSameOwner(_project.owner.email === user?.email);
+    });
+  }, [projectId]);
 
   const myTheme = createTheme({
     theme: "dark",
@@ -122,26 +176,123 @@ export default function Project() {
     ],
   });
 
+  const handleSaveClick = () => {
+    if (project.id === "") {
+      handleSave();
+    } else {
+      updateProject();
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "SignUp or LogIn first to save the project!",
+        variant: "default",
+      });
+      return;
+    }
+    const id = Date.now().toString();
+    const temp = await addDoc(collection(db, "Projects"), {
+      ...project,
+      id: id,
+    })
+      .then((res) => {
+        toast({
+          title: "Success",
+          description: "Project Saved Successfully.",
+          variant: "default",
+        });
+        setProject({ ...project, id });
+      })
+  };
+
+  const updateProject = async () => {
+    try {
+      const q = firebaseQuery(
+        collection(db, "Projects"),
+        where("id", "==", project.id)
+      );
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(async (d) => {
+        const projectRef = doc(db, "Projects", d.id);
+        await updateDoc(projectRef, { ...project }).then((_) => {
+          toast({
+            title: "Success",
+            description: "Project Saved Successfully.",
+            variant: "default",
+          });
+        });
+      });
+    } catch (error) {
+    }
+  };
+
   useEffect(() => {
     const output = `
     <html>
     <head>
     </head>
     <style>
-    ${css}
+    ${project.css}
     </style>
     <body>
-    ${html}
-    <script>${js}</script>
+    ${project.html}
+    <script>${project.js}</script>
     </body>
     </html>`;
     setOutputCode(output);
-  }, [html, css, js]);
+  }, [project]);
 
   return (
     <main className="min-h-screen h-screen">
-      <Navbar></Navbar>
-      <div className="w-full h-full pt-12">
+      <Navbar>
+        <div className="w-full h-full flex flex-row justify-between">
+          <div className="flex flex-col">
+            {sameOwner ? (
+              <input
+                type="text"
+                className="p-0 m-0 bg-transparent border-0 outline-none text-base"
+                value={project.title}
+                onChange={(e) => {
+                  setProject({ ...project, title: e.target.value });
+                }}
+              />
+            ) : (
+              <label className="p-0 m-0 bg-transparent border-0 outline-none text-base">
+                {project.title}
+              </label>
+            )}
+            <div className="text-sm">
+              {project.owner.displayName || project.owner.email}
+            </div>
+          </div>
+          <div className="flex flex-row gap-8">
+            {sameOwner && (
+              <>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="private"
+                    onCheckedChange={(e) => {
+                      setProject({ ...project, private: e });
+                    }}
+                  />
+                  <Label htmlFor="private">Private</Label>
+                </div>
+                <Button
+                  onClick={() => handleSaveClick()}
+                  className="flex flex-row gap-4"
+                >
+                  <FaSave />
+                  Save
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </Navbar>
+      <div className="w-full h-full pt-20">
         <ResizablePanelGroup direction="vertical">
           <ResizablePanel className="min-h-[25vh]">
             <ResizablePanelGroup direction="horizontal">
@@ -160,9 +311,9 @@ export default function Project() {
                       style={{ scrollbarColor: "green" }}
                       className="absolute top-0 left-0 w-[100%] h-[100%] bg-[#193549]"
                       onChange={(value, viewUpdate) => {
-                        setHtml(value);
+                        setProject({ ...project, html: value });
                       }}
-                      value={html}
+                      value={project.html}
                     />
                   </div>
                 </div>
@@ -183,9 +334,9 @@ export default function Project() {
                       style={{ scrollbarColor: "green" }}
                       className="absolute top-0 left-0 w-[100%] h-[100%] bg-[#193549]"
                       onChange={(value, viewUpdate) => {
-                        setCSS(value);
+                        setProject({ ...project, css: value });
                       }}
-                      value={css}
+                      value={project.css}
                     />
                   </div>
                 </div>
@@ -206,9 +357,9 @@ export default function Project() {
                       style={{ scrollbarColor: "green" }}
                       className="absolute top-0 left-0 w-[100%] h-[100%] bg-[#193549]"
                       onChange={(value, viewUpdate) => {
-                        setJS(value);
+                        setProject({ ...project, js: value });
                       }}
-                      value={js}
+                      value={project.js}
                     />
                   </div>
                 </div>
@@ -227,9 +378,13 @@ export default function Project() {
               }`}
               onClick={() => setShowOutput(!showOutput)}
             >
-              <CiCircleChevDown className={`text-3xl duration-200 ${showOutput ? "rotate-0" : "rotate-180"}`} />
+              <CiCircleChevDown
+                className={`text-3xl duration-200 ${
+                  showOutput ? "rotate-0" : "rotate-180"
+                }`}
+              />
             </div>
-            <iframe srcDoc={outputCode} className="h-full w-full" />
+            <iframe srcDoc={outputCode} className="h-full w-full bg-white" />
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>

@@ -1,12 +1,10 @@
 "use client";
 
-import { auth, db } from "@/app/firebase/firebase.config";
+import { db } from "@/app/firebase/firebase.config";
 import LoadingPage from "@/components/loading/loadingPage";
 import Navbar from "@/components/navbar/navbar";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/components/ui/use-toast";
-import { sendEmailVerification, User } from "firebase/auth";
+import { User } from "firebase/auth";
 import {
   collection,
   onSnapshot,
@@ -18,9 +16,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { IoSearch } from "react-icons/io5";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
-export default function Home() {
+export default function Explore() {
   const user: User = useSelector((state: any) => state.user.user);
   const [fetchedProjects, setFetchedProjects] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -31,7 +29,7 @@ export default function Home() {
     if (user) {
       const porjectQuery = query(
         collection(db, "Projects"),
-        where("owner.email", "==", user.email),
+        where("private", "==", false),
         orderBy("id", "desc")
       );
       const unsubscribe = onSnapshot(porjectQuery, (querySnaps) => {
@@ -54,29 +52,6 @@ export default function Home() {
     }
   }, [user]);
 
-  const sendVarificationEmail = async () => {
-    try {
-      if (!user?.emailVerified) {
-        sendEmailVerification(auth.currentUser!, {
-          url: "https://coding-pencil.netlify.app/",
-        });
-        toast({
-          title: "Success",
-          description: "Varification email sent",
-          variant: "default",
-        });
-      } else {
-        toast({
-          title: "Success",
-          description: "Email already verified",
-          variant: "default",
-        });
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   return (
     <main className="flex min-h-screen h-screen">
       <Navbar>
@@ -98,9 +73,9 @@ export default function Home() {
           <div className="w-full h-full flex justify-center items-center">
             <LoadingPage />
           </div>
-        ) : auth.currentUser?.emailVerified || false ? (
+        ) : (
           <>
-            <h1 className="text-2xl">Your Projects</h1>
+            <h1 className="text-2xl">Explore Projects</h1>
             <hr />
             <div className="w-full h-full flex justify-center items-center">
               {projects.length > 0 ? (
@@ -151,16 +126,6 @@ export default function Home() {
               )}
             </div>
           </>
-        ) : (
-          <div className="w-full h-full flex flex-col justify-center items-center gap-4">
-            <p className="text-2xl">Verify Your Email</p>
-            <p className="text-lg">
-              Please verify your email to access your projects
-            </p>
-            <Button onClick={sendVarificationEmail} className="">
-              Send Verification Email
-            </Button>
-          </div>
         )}
       </div>
     </main>
