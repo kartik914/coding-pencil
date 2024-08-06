@@ -105,7 +105,7 @@ export default function Home() {
             <div className="w-full h-full flex justify-center items-center">
               {projects.length > 0 ? (
                 <div className="w-full h-full p-4 grid grid-flow-col grid-cols-4">
-                  {projects.map((project) => {
+                  {projects.map((project, index) => {
                     if (
                       project.title
                         .toLowerCase()
@@ -115,6 +115,7 @@ export default function Home() {
                         <Link
                           href={`/project?id=${project.id}`}
                           className="w-min h-min"
+                          key={index}
                         >
                           <div className="size-80 bg-gray-800 relative rounded-2xl overflow-hidden cursor-pointer">
                             <div className="absolute bottom-0 p-4 flex flex-row gap-4 w-full h-min bg-slate-700">
