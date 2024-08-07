@@ -71,16 +71,18 @@ export default function Project() {
 
     const unsubscribe = onSnapshot(projectQuery, (querySnaps) => {
       const _project = querySnaps.docs.map((doc) => doc.data())[0];
-      setProject({
-        id: _project.id,
-        title: _project.title,
-        owner: _project.owner,
-        html: _project.html,
-        css: _project.css,
-        js: _project.js,
-        private: _project.private,
-      });
-      setSameOwner(_project.owner.email === user?.email);
+      if (_project) {
+        setProject({
+          id: _project.id,
+          title: _project.title,
+          owner: _project.owner,
+          html: _project.html,
+          css: _project.css,
+          js: _project.js,
+          private: _project.private,
+        });
+        setSameOwner(_project.owner.email === user?.email);
+      }
     });
   }, [projectId]);
 
@@ -197,15 +199,14 @@ export default function Project() {
     const temp = await addDoc(collection(db, "Projects"), {
       ...project,
       id: id,
-    })
-      .then((res) => {
-        toast({
-          title: "Success",
-          description: "Project Saved Successfully.",
-          variant: "default",
-        });
-        setProject({ ...project, id });
-      })
+    }).then((res) => {
+      toast({
+        title: "Success",
+        description: "Project Saved Successfully.",
+        variant: "default",
+      });
+      setProject({ ...project, id });
+    });
   };
 
   const updateProject = async () => {
@@ -225,8 +226,7 @@ export default function Project() {
           });
         });
       });
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {

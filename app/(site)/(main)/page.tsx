@@ -118,6 +118,22 @@ export default function Home() {
                           key={index}
                         >
                           <div className="size-80 bg-gray-800 relative rounded-2xl overflow-hidden cursor-pointer">
+                            <iframe
+                              className="h-full w-full object-cover"
+                              srcDoc={`
+                                  <html>
+                                  <head>
+                                  </head>
+                                  <style>
+                                  ${project.css}
+                                  </style>
+                                  <body>
+                                  ${project.html}
+                                  <script>${project.js}</script>
+                                  </body>
+                                  </html>`}
+                              scrolling="no"
+                            ></iframe>
                             <div className="absolute bottom-0 p-4 flex flex-row gap-4 w-full h-min bg-slate-700">
                               <div className="size-12 bg-gray-600 flex justify-center items-center text-3xl rounded-xl">
                                 <p>{project.title.charAt(0).toUpperCase()}</p>

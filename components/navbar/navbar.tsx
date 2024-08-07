@@ -60,7 +60,7 @@ const Navbar: React.FC<NavbarProps> = ({ children }) => {
   return (
     <nav className="w-full h-12 bg-[#15232d] p-4 py-8 flex flex-row fixed justify-between items-center shadow-xl">
       <Link href={"/"}>
-        <div className="text-white text-xl">Logo</div>
+        <div className="text-white text-xl whitespace-nowrap">Coding Pencil</div>
       </Link>
       <div className="w-full px-20 flex justify-start items-start">
         {children}
